@@ -59,6 +59,9 @@ score = 0
 
 # Game Over
 def game_over():
+    """
+    The the black screen that appears when the game is over. Consists of A text that reads "YOU DIED" and the players final score
+    """
     my_font = pygame.font.SysFont('times new roman', 90)
     game_over_surface = my_font.render('YOU DIED', True, red)
     game_over_rect = game_over_surface.get_rect()
@@ -74,6 +77,9 @@ def game_over():
 
 # Score
 def show_score(choice, color, font, size):
+    """
+    Shows the score both in-game and on the "Death screen"
+    """
     score_font = pygame.font.SysFont(font, size)
     score_surface = score_font.render('Score : ' + str(score), True, color)
     score_rect = score_surface.get_rect()
@@ -83,6 +89,9 @@ def show_score(choice, color, font, size):
         score_rect.midtop = (frame_size_x/2, frame_size_y/1.25)
     game_window.blit(score_surface, score_rect)
     # pygame.display.flip()
+    
+
+
 
 
 def if_quit_then_exit(event):
