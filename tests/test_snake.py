@@ -21,7 +21,31 @@ class TestSnake(unittest.TestCase):
         new_direction = self.starting_new_direction
         snake_pos = self.starting_snake_position
         snake_body = self.starting_snake_body
-        
+    
+    def test_init_colors(self):
+        black, white, red, green, blue = init_colors()
+
+        self.assertEqual(black, pygame.Color(0, 0, 0))
+        self.assertEqual(white, pygame.Color(255, 255, 255))
+        self.assertEqual(red, pygame.Color(255, 0, 0))
+        self.assertEqual(green, pygame.Color(0, 255, 0))
+        self.assertEqual(blue, pygame.Color(0, 0, 255))
+
+    def test_init_difficulty(self):
+        difficulty = init_difficulty()
+
+        self.assertEqual(difficulty, 25)
+
+    def test_init_framesize(self):
+        frame_size_x, frame_size_y = init_framesize()
+
+        self.assertEqual(frame_size_x, 720)
+        self.assertEqual(frame_size_y, 480)
+
+    def test_init_fps_controller(self):
+        fps_controller = init_fps_controller()
+
+        self.assertIsInstance(fps_controller, pygame.time.Clock)
 
     #TODO: Consider making these functions take parameters instead of globals for more modularised testing (setting globals works but ugly)
     # Testing the function update_snake_position()
