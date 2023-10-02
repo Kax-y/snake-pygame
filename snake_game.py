@@ -42,8 +42,7 @@ while True:
     show_score(frame_size_x, frame_size_y, 1, white, 'consolas', 20)
 
     # Game over conditions
-    snake_out_of_bounds(frame_size_x, frame_size_y, black, red)
-    snake_collision_with_itself(frame_size_x, frame_size_y, black, red)
+    game_over_conditions(frame_size_x, frame_size_y, black, red)
     
     # Refresh game screen
     pygame.display.update()

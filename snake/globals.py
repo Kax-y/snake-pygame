@@ -1,4 +1,4 @@
-import pygame, sys, time, random
+import pygame, sys, time, random, pickle
 
 
 def init_colors():
@@ -65,6 +65,8 @@ score = 0
 
 # Game Over
 def game_over(frame_size_x, frame_size_y, black, red):
+    save_score()
+
     my_font = pygame.font.SysFont('times new roman', 90)
     game_over_surface = my_font.render('YOU DIED', True, red)
     game_over_rect = game_over_surface.get_rect()
@@ -73,22 +75,43 @@ def game_over(frame_size_x, frame_size_y, black, red):
     game_window.blit(game_over_surface, game_over_rect)
     show_score(frame_size_x, frame_size_y, 0, red, 'times', 20)
     pygame.display.flip()
-    time.sleep(3)
+    time.sleep(5)
     pygame.quit()
     sys.exit()
 
 
-# Score
 def show_score(frame_size_x, frame_size_y, choice, color, font, size):
+    """
+    Show score or highscore.\n
+    Choice = 1: Show score.\n
+    Choice = 0: Show highscores.
+    """
     score_font = pygame.font.SysFont(font, size)
-    score_surface = score_font.render('Score : ' + str(score), True, color)
-    score_rect = score_surface.get_rect()
+    
     if choice == 1:
-        score_rect.midtop = (frame_size_x/10, 15)
-    else:
-        score_rect.midtop = (frame_size_x/2, frame_size_y/1.25)
-    game_window.blit(score_surface, score_rect)
-    # pygame.display.flip()
+        score_surface = score_font.render("Score :"  + str(score), True, color)
+        score_rect = score_surface.get_rect()
+        score_rect.midtop = (frame_size_x/10, 16)
+        game_window.blit(score_surface, score_rect)
+
+    elif choice == 0:
+        render_list = []
+        highscores = get_highscores()
+        print(highscores)
+
+        # Add highscore title to the highscore screen
+        render_list.append("Highscores:")
+
+        # Create each row of highscore
+        for i in range(len(highscores)):
+            render_list.append(str(i + 1) + ". " + str(highscores[i]))
+
+        # Render the highscores in a list
+        for i in range(len(render_list)):
+            score_surface = score_font.render(render_list[i], True, color)
+            score_rect = score_surface.get_rect()
+            score_rect.midtop = (frame_size_x/2, frame_size_y/1.5 + 16 * i)
+            game_window.blit(score_surface, score_rect)
 
 
 def if_quit_then_exit(event):
@@ -98,6 +121,37 @@ def if_quit_then_exit(event):
     if event.type == pygame.QUIT:
         pygame.quit()
         sys.exit()
+
+
+def save_score():
+    """
+    Save the 5 best scores in a pickle file.
+    """
+    #TODO: Add player names
+    try:
+        with open("highscores.pickle", "rb") as score_file:
+            highscores = pickle.load(score_file)
+    except:
+        highscores = []
+
+    highscores.append(score)
+    highscores.sort(reverse=True)
+
+    with open("highscores.pickle", "wb") as score_file:    
+        pickle.dump(highscores[:5], score_file)
+
+
+def get_highscores():
+    """
+    Get the top 5 highscores from a pickle file.
+    """
+    try:
+        with open("highscores.pickle", "rb") as score_file:
+            highscores = pickle.load(score_file)
+    except:
+        highscores = []
+
+    return highscores
 
 
 def movement_controls(event):
@@ -218,6 +272,14 @@ def draw_food(white):
     Draw the existing food in the game window.
     """
     pygame.draw.rect(game_window, white, pygame.Rect(food_pos[0], food_pos[1], 10, 10))
+
+
+def game_over_conditions(frame_size_x, frame_size_y, black, red):
+    """
+    Game over conditions.
+    """
+    snake_out_of_bounds(frame_size_x, frame_size_y, black, red)
+    snake_collision_with_itself(frame_size_x, frame_size_y, black, red)
 
 
 def snake_out_of_bounds(frame_size_x, frame_size_y, black, red):
