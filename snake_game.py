@@ -16,6 +16,11 @@ if check_errors[1] > 0:
 else:
     print('[+] Game successfully initialised')
 
+black, white, red, green, blue = init_colors()
+difficulty = init_difficulty()
+frame_size_x, frame_size_y = init_framesize()
+fps_controller = init_fps_controller()
+
 while True:
     for event in pygame.event.get():
         if_quit_then_exit(event)
@@ -28,17 +33,17 @@ while True:
 
     # Food mechanic
     grow_snake()    
-    spawn_food()
+    spawn_food(frame_size_x, frame_size_y)
 
     # Drawing in the game window
-    fill_background()
-    draw_snake()
-    draw_food()
-    show_score(1, white, 'consolas', 20)
+    fill_background(black)
+    draw_snake(green)
+    draw_food(white)
+    show_score(frame_size_x, frame_size_y, 1, white, 'consolas', 20)
 
     # Game over conditions
-    snake_out_of_bounds()
-    snake_collision_with_itself()
+    snake_out_of_bounds(frame_size_x, frame_size_y, black, red)
+    snake_collision_with_itself(frame_size_x, frame_size_y, black, red)
     
     # Refresh game screen
     pygame.display.update()

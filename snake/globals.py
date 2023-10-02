@@ -1,36 +1,60 @@
 import pygame, sys, time, random
 
-# Difficulty settings
-# Easy      ->  10
-# Medium    ->  25
-# Hard      ->  40
-# Harder    ->  60
-# Impossible->  120
-difficulty = 25
 
-# Window size
-frame_size_x = 720
-frame_size_y = 480
+def init_colors():
+    """
+    Initialize colors in (R, G, B)
+    """
+    black = pygame.Color(0, 0, 0)
+    white = pygame.Color(255, 255, 255)
+    red = pygame.Color(255, 0, 0)
+    green = pygame.Color(0, 255, 0)
+    blue = pygame.Color(0, 0, 255)
+
+    return black, white, red, green, blue
+
+
+def init_difficulty():
+    """
+    Initialize difficulty for snake
+    Easy      ->  10
+    Medium    ->  25
+    Hard      ->  40
+    Harder    ->  60
+    Impossible->  120
+    """
+    difficulty = 25
+    
+    return difficulty
+
+
+def init_framesize():
+    """
+    Initialize the framesize
+    """
+    frame_size_x = 720
+    frame_size_y = 480
+
+    return frame_size_x, frame_size_y
+
+
+def init_fps_controller():
+    """
+    Initialize FPS (frames per second) controller
+    """
+    fps_controller = pygame.time.Clock()
+
+    return fps_controller
 
 # Initialise game window
 pygame.display.set_caption('Snake Eater')
-game_window = pygame.display.set_mode((frame_size_x, frame_size_y))
-
-# Colors (R, G, B)
-black = pygame.Color(0, 0, 0)
-white = pygame.Color(255, 255, 255)
-red = pygame.Color(255, 0, 0)
-green = pygame.Color(0, 255, 0)
-blue = pygame.Color(0, 0, 255)
-
-# FPS (frames per second) controller
-fps_controller = pygame.time.Clock()
+game_window = pygame.display.set_mode(init_framesize())
 
 # Game variables
 snake_pos = [100, 50]
 snake_body = [[100, 50], [100-10, 50], [100-(2*10), 50]]
 
-food_pos = [random.randrange(1, (frame_size_x//10)) * 10, random.randrange(1, (frame_size_y//10)) * 10]
+food_pos = [random.randrange(1, (init_framesize()[0]//10)) * 10, random.randrange(1, (init_framesize()[1]//10)) * 10]
 food_spawn = True
 
 direction = 'RIGHT'
@@ -40,14 +64,14 @@ score = 0
 
 
 # Game Over
-def game_over():
+def game_over(frame_size_x, frame_size_y, black, red):
     my_font = pygame.font.SysFont('times new roman', 90)
     game_over_surface = my_font.render('YOU DIED', True, red)
     game_over_rect = game_over_surface.get_rect()
     game_over_rect.midtop = (frame_size_x/2, frame_size_y/4)
     game_window.fill(black)
     game_window.blit(game_over_surface, game_over_rect)
-    show_score(0, red, 'times', 20)
+    show_score(frame_size_x, frame_size_y, 0, red, 'times', 20)
     pygame.display.flip()
     time.sleep(3)
     pygame.quit()
@@ -55,7 +79,7 @@ def game_over():
 
 
 # Score
-def show_score(choice, color, font, size):
+def show_score(frame_size_x, frame_size_y, choice, color, font, size):
     score_font = pygame.font.SysFont(font, size)
     score_surface = score_font.render('Score : ' + str(score), True, color)
     score_rect = score_surface.get_rect()
@@ -160,7 +184,7 @@ def grow_snake():
         snake_body.pop()
 
 
-def spawn_food():
+def spawn_food(frame_size_x, frame_size_y):
     """
     Spawn food if there is no food on the screen.
     """
@@ -171,7 +195,7 @@ def spawn_food():
     food_spawn = True
 
 
-def draw_snake():
+def draw_snake(green):
     """
     Draw the snake in the game window. One square at a time.
     """
@@ -182,35 +206,35 @@ def draw_snake():
         pygame.draw.rect(game_window, green, pygame.Rect(pos[0], pos[1], 10, 10))
 
 
-def fill_background():
+def fill_background(black):
     """
     Fill the background with the colour black.
     """
     game_window.fill(black)
     
 
-def draw_food():
+def draw_food(white):
     """
     Draw the existing food in the game window.
     """
     pygame.draw.rect(game_window, white, pygame.Rect(food_pos[0], food_pos[1], 10, 10))
 
 
-def snake_out_of_bounds():
+def snake_out_of_bounds(frame_size_x, frame_size_y, black, red):
     """
     Show game over screen if the snake is outside the game window.
     """
     # Getting out of bounds
     if snake_pos[0] < 0 or snake_pos[0] > frame_size_x-10:
-        game_over()
+        game_over(frame_size_x, frame_size_y, black, red)
     if snake_pos[1] < 0 or snake_pos[1] > frame_size_y-10:
-        game_over()
+        game_over(frame_size_x, frame_size_y, black, red)
 
 
-def snake_collision_with_itself():
+def snake_collision_with_itself(frame_size_x, frame_size_y, black, red):
     """
     Show game over screen if snake walks into its tail.
     """
     for block in snake_body[1:]:
         if snake_pos[0] == block[0] and snake_pos[1] == block[1]:
-            game_over()
+            game_over(frame_size_x, frame_size_y, black, red)
