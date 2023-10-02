@@ -14,20 +14,6 @@ def init_colors():
     return black, white, red, green, blue
 
 
-def init_difficulty():
-    """
-    Initialize difficulty for snake
-    Easy      ->  10
-    Medium    ->  25
-    Hard      ->  40
-    Harder    ->  60
-    Impossible->  120
-    """
-    difficulty = 25
-    
-    return difficulty
-
-
 def init_framesize():
     """
     Initialize the framesize
@@ -50,18 +36,23 @@ def init_fps_controller():
 pygame.display.set_caption('Snake Eater')
 game_window = pygame.display.set_mode(init_framesize())
 
-# Game variables
-snake_pos = [100, 50]
-snake_body = [[100, 50], [100-10, 50], [100-(2*10), 50]]
+def initials():
+    """
+    Initialize Snake values
+    """
 
-food_pos = [random.randrange(1, (init_framesize()[0]//10)) * 10, random.randrange(1, (init_framesize()[1]//10)) * 10]
-food_spawn = True
+    global snake_pos, snake_body, food_pos, food_spawn, direction, new_direction, score
+    
+    snake_pos = [100, 50]
+    snake_body = [[100, 50], [100-10, 50], [100-(2*10), 50]]
 
-direction = 'RIGHT'
-new_direction = direction
+    food_pos = [random.randrange(1, (init_framesize()[0]//10)) * 10, random.randrange(1, (init_framesize()[1]//10)) * 10]
+    food_spawn = True
 
-score = 0
+    direction = 'RIGHT'
+    new_direction = direction
 
+    score = 0
 
 # Game Over
 def game_over(frame_size_x, frame_size_y, black, red):
@@ -74,8 +65,9 @@ def game_over(frame_size_x, frame_size_y, black, red):
     show_score(frame_size_x, frame_size_y, 0, red, 'times', 20)
     pygame.display.flip()
     time.sleep(3)
-    pygame.quit()
-    sys.exit()
+    return False
+    #pygame.quit()
+    #sys.exit()
 
 
 # Score
@@ -89,6 +81,54 @@ def show_score(frame_size_x, frame_size_y, choice, color, font, size):
         score_rect.midtop = (frame_size_x/2, frame_size_y/1.25)
     game_window.blit(score_surface, score_rect)
     # pygame.display.flip()
+
+def menu(frame_size_x, frame_size_y, white, black):
+    """
+    Display a menu for choosing game difficulty
+    """
+
+    my_font = pygame.font.SysFont('times new roman', 40)
+    option_font = pygame.font.SysFont('times new roman', 30)
+
+    title_surface = my_font.render('Snake Eater - Choose Difficulty', True, white)
+    title_rect = title_surface.get_rect(center=(frame_size_x/2, frame_size_y/5))
+
+    options = ["Easy", "Medium", "Hard", "Quit"]
+    options_surfaces = [option_font.render(opt, True, white) for opt in options]
+    options_rects = [surf.get_rect(center=(frame_size_x/2, frame_size_y/2 + i * 40)) for i, surf in enumerate(options_surfaces)]
+
+    selected_index = 0
+
+    menu_open = True
+    difficulty_values = [10, 25, 40, -1]
+    difficulty = difficulty_values[selected_index]
+
+    while menu_open:
+        for event in pygame.event.get():
+            if_quit_then_exit(event)
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP and selected_index > 0:
+                    selected_index -= 1
+                elif event.key == pygame.K_DOWN and selected_index < len(options) - 1:
+                    selected_index += 1
+                elif event.key == pygame.K_RETURN:
+                    difficulty = difficulty_values[selected_index]
+                    menu_open = False
+
+        game_window.fill(black)
+        game_window.blit(title_surface, title_rect)
+
+        for i, (opt_surf, opt_rect) in enumerate(zip(options_surfaces, options_rects)):
+            if i == selected_index:
+                pygame.draw.rect(game_window, white, opt_rect.inflate(20, 10), 2)  # Draw a white box around the selected option
+            game_window.blit(opt_surf, opt_rect)
+
+        pygame.display.flip()
+    
+    if difficulty == -1:
+        sys.exit()
+
+    return difficulty
 
 
 def if_quit_then_exit(event):
@@ -118,7 +158,6 @@ def movement_controls(event):
     
     if legal_direction(new_direction):
         direction = new_direction
-
 
 def quit_key(event):
     """
@@ -226,9 +265,10 @@ def snake_out_of_bounds(frame_size_x, frame_size_y, black, red):
     """
     # Getting out of bounds
     if snake_pos[0] < 0 or snake_pos[0] > frame_size_x-10:
-        game_over(frame_size_x, frame_size_y, black, red)
+        return game_over(frame_size_x, frame_size_y, black, red)
     if snake_pos[1] < 0 or snake_pos[1] > frame_size_y-10:
-        game_over(frame_size_x, frame_size_y, black, red)
+        return game_over(frame_size_x, frame_size_y, black, red)
+    return True
 
 
 def snake_collision_with_itself(frame_size_x, frame_size_y, black, red):
@@ -237,4 +277,5 @@ def snake_collision_with_itself(frame_size_x, frame_size_y, black, red):
     """
     for block in snake_body[1:]:
         if snake_pos[0] == block[0] and snake_pos[1] == block[1]:
-            game_over(frame_size_x, frame_size_y, black, red)
+            return game_over(frame_size_x, frame_size_y, black, red)
+    return True
