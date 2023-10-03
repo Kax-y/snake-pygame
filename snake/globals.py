@@ -36,7 +36,7 @@ def init_fps_controller():
 pygame.display.set_caption('Snake Eater')
 game_window = pygame.display.set_mode(init_framesize())
 
-def initials():
+def init_globals():
     """
     Initialize Snake values
     """
