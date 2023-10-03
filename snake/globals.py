@@ -46,22 +46,35 @@ def init_fps_controller():
 
     return fps_controller
 
+
+
+
 # Initialise game window
 pygame.display.set_caption('Snake Eater')
 game_window = pygame.display.set_mode(init_framesize())
 
+GRID_SIZE = 10
+
 # Game variables
 snake_pos = [100, 50]
-snake_body = [[100, 50], [100-10, 50], [100-(2*10), 50]]
+snake_body = [[100, 50], [100-GRID_SIZE, 50], [100-(2*GRID_SIZE), 50]]
 
-food_pos = [random.randrange(1, (init_framesize()[0]//10)) * 10, random.randrange(1, (init_framesize()[1]//10)) * 10]
+food_pos = [random.randrange(1, (init_framesize()[0]//GRID_SIZE)) * GRID_SIZE, random.randrange(1, (init_framesize()[1]//GRID_SIZE)) * GRID_SIZE]
 food_spawn = True
 
 direction = 'RIGHT'
 new_direction = direction
 
 score = 0
+difficulty = init_difficulty()
+fps_controller = init_fps_controller()
+DYNAMIC_DIFFICULTY_INCREASE = 3
 
+def control_difficulty():
+    """
+    Changing the time between frames. This controls the difficulty.
+    """
+    fps_controller.tick(difficulty)
 
 # Game Over
 def game_over(frame_size_x, frame_size_y, black, red):
@@ -89,7 +102,7 @@ def show_score(frame_size_x, frame_size_y, choice, color, font, size):
     score_font = pygame.font.SysFont(font, size)
     
     if choice == 1:
-        score_surface = score_font.render("Score :"  + str(score), True, color)
+        score_surface = score_font.render("Score: "  + str(score), True, color)
         score_rect = score_surface.get_rect()
         score_rect.midtop = (frame_size_x/10, 16)
         game_window.blit(score_surface, score_rect)
@@ -97,7 +110,6 @@ def show_score(frame_size_x, frame_size_y, choice, color, font, size):
     elif choice == 0:
         render_list = []
         highscores = get_highscores()
-        print(highscores)
 
         # Add highscore title to the highscore screen
         render_list.append("Highscores:")
@@ -114,9 +126,18 @@ def show_score(frame_size_x, frame_size_y, choice, color, font, size):
             game_window.blit(score_surface, score_rect)
 
 
+def advance_difficulty():
+    """
+    Increase the speed of the snake.
+    """
+    global difficulty
+    difficulty += DYNAMIC_DIFFICULTY_INCREASE
+    
+
+
 def if_quit_then_exit(event):
     """
-    Quit the game if a quit event is given
+    Quit the game if a quit event is given.
     """
     if event.type == pygame.QUIT:
         pygame.quit()
@@ -213,26 +234,27 @@ def update_snake_position():
     """
     Move the snake depending on current direction.
     """
-    #TODO: Set position change as a constant instead of a magical number
     if direction == 'UP':
-        snake_pos[1] -= 10
+        snake_pos[1] -= GRID_SIZE
     if direction == 'DOWN':
-        snake_pos[1] += 10
+        snake_pos[1] += GRID_SIZE
     if direction == 'LEFT':
-        snake_pos[0] -= 10
+        snake_pos[0] -= GRID_SIZE
     if direction == 'RIGHT':
-        snake_pos[0] += 10
+        snake_pos[0] += GRID_SIZE
+    move_or_grow_snake()
 
 
-def grow_snake():
+def move_or_grow_snake():
     """
-    Increase snake size if food is eaten by snake
+    Increase snake size if food is eaten by snake otherwise move the snake.
     """
     global score
     global food_spawn
     snake_body.insert(0, list(snake_pos))
     if snake_pos[0] == food_pos[0] and snake_pos[1] == food_pos[1]:
         score += 1
+        advance_difficulty()
         food_spawn = False
     else:
         snake_body.pop()
@@ -245,7 +267,7 @@ def spawn_food(frame_size_x, frame_size_y):
     global food_spawn
     global food_pos
     if not food_spawn:
-        food_pos = [random.randrange(1, (frame_size_x//10)) * 10, random.randrange(1, (frame_size_y//10)) * 10]
+        food_pos = [random.randrange(1, (frame_size_x//GRID_SIZE)) * GRID_SIZE, random.randrange(1, (frame_size_y//GRID_SIZE)) * GRID_SIZE]
     food_spawn = True
 
 
@@ -253,11 +275,10 @@ def draw_snake(green):
     """
     Draw the snake in the game window. One square at a time.
     """
-    # TODO: Reoccuring magic number 10
     for pos in snake_body:
         # .draw.rect(play_surface, color, xy-coordinate)
         # xy-coordinate -> .Rect(x, y, size_x, size_y)
-        pygame.draw.rect(game_window, green, pygame.Rect(pos[0], pos[1], 10, 10))
+        pygame.draw.rect(game_window, green, pygame.Rect(pos[0], pos[1], GRID_SIZE, GRID_SIZE))
 
 
 def fill_background(black):
@@ -271,7 +292,7 @@ def draw_food(white):
     """
     Draw the existing food in the game window.
     """
-    pygame.draw.rect(game_window, white, pygame.Rect(food_pos[0], food_pos[1], 10, 10))
+    pygame.draw.rect(game_window, white, pygame.Rect(food_pos[0], food_pos[1], GRID_SIZE, GRID_SIZE))
 
 
 def game_over_conditions(frame_size_x, frame_size_y, black, red):
@@ -287,9 +308,9 @@ def snake_out_of_bounds(frame_size_x, frame_size_y, black, red):
     Show game over screen if the snake is outside the game window.
     """
     # Getting out of bounds
-    if snake_pos[0] < 0 or snake_pos[0] > frame_size_x-10:
+    if snake_pos[0] < 0 or snake_pos[0] > frame_size_x - GRID_SIZE:
         game_over(frame_size_x, frame_size_y, black, red)
-    if snake_pos[1] < 0 or snake_pos[1] > frame_size_y-10:
+    if snake_pos[1] < 0 or snake_pos[1] > frame_size_y - GRID_SIZE:
         game_over(frame_size_x, frame_size_y, black, red)
 
 

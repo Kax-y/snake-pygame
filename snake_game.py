@@ -26,13 +26,12 @@ while True:
         if_quit_then_exit(event)
 
     # Setup all controls for the game
-    controls(event)    
+    controls(event)
 
     # Move the snake in the game window
     update_snake_position()
 
-    # Food mechanic
-    grow_snake()    
+    # Food mechanic 
     spawn_food(frame_size_x, frame_size_y)
 
     # Drawing in the game window
@@ -48,4 +47,4 @@ while True:
     pygame.display.update()
 
     # Refresh rate
-    fps_controller.tick(difficulty)
+    control_difficulty()
