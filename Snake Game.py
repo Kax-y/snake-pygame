@@ -38,6 +38,7 @@ white = pygame.Color(255, 255, 255)
 red = pygame.Color(255, 0, 0)
 green = pygame.Color(0, 255, 0)
 blue = pygame.Color(0, 0, 255)
+yellow = pygame.Color(255,255,0)
 
 
 # FPS (frames per second) controller
@@ -55,6 +56,10 @@ direction = 'RIGHT'
 new_direction = direction
 
 score = 0
+golden_apple_spawn = False
+golden_apple_pos = [random.randrange(1, (frame_size_x//10)) * 10, random.randrange(1, (frame_size_y//10)) * 10]
+golden_apple_spawn_interval = 10
+food_spawn_counter = 0
 
 
 # Game Over
@@ -179,13 +184,21 @@ def grow_snake():
     """
     global score
     global food_spawn
+    global food_spawn_counter
+    global golden_apple_spawn
+    global golden_apple_spawn_interval
     snake_body.insert(0, list(snake_pos))
+    if snake_pos[0] == golden_apple_pos[0] and snake_pos[1] == golden_apple_pos[1]:
+        score += 3
+        golden_apple_spawn = False
+        food_spawn = False
     if snake_pos[0] == food_pos[0] and snake_pos[1] == food_pos[1]:
         score += 1
+        #food_spawn_counter += 1
         food_spawn = False
+        golden_apple_spawn = False
     else:
         snake_body.pop()
-
 
 def spawn_food():
     """
@@ -193,10 +206,20 @@ def spawn_food():
     """
     global food_spawn
     global food_pos
-    if not food_spawn:
-        food_pos = [random.randrange(1, (frame_size_x//10)) * 10, random.randrange(1, (frame_size_y//10)) * 10]
-    food_spawn = True
+    global golden_apple_spawn
+    global golden_apple_pos
+    global food_spawn_counter
+    global score
 
+    print("food_spawn_counter:", food_spawn_counter)
+    if not golden_apple_spawn and food_spawn_counter == 4:
+        golden_apple_pos = [random.randrange(1, (frame_size_x//10)) * 10, random.randrange(1, (frame_size_y//10)) * 10]
+        golden_apple_spawn = True
+    elif not food_spawn:
+        food_pos = [random.randrange(1, (frame_size_x//10)) * 10, random.randrange(1, (frame_size_y//10)) * 10]
+        food_spawn = True
+        food_spawn_counter += 1
+    
 
 def draw_snake():
     """
@@ -222,6 +245,11 @@ def draw_food():
     """
     pygame.draw.rect(game_window, white, pygame.Rect(food_pos[0], food_pos[1], 10, 10))
 
+def draw_golden_apple():
+    """
+    Draw the existing food in the game window.
+    """
+    pygame.draw.rect(game_window, yellow, pygame.Rect(golden_apple_pos[0], golden_apple_pos[1], 10, 10))
 
 def snake_out_of_bounds():
     """
@@ -262,6 +290,7 @@ while True:
     fill_background()
     draw_snake()
     draw_food()
+    draw_golden_apple()
     show_score(1, white, 'consolas', 20)
 
     # Game over conditions
