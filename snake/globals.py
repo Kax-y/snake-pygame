@@ -1,4 +1,4 @@
-import pygame, sys, time, random
+import pygame, sys, time, random, pickle
 
 
 def init_colors():
@@ -32,30 +32,45 @@ def init_fps_controller():
 
     return fps_controller
 
+
 # Initialise game window
 pygame.display.set_caption('Snake Eater')
 game_window = pygame.display.set_mode(init_framesize())
+
+GRID_SIZE = 10
+DYNAMIC_DIFFICULTY_INCREASE = 3
 
 def init_globals():
     """
     Initialize Snake values
     """
 
-    global snake_pos, snake_body, food_pos, food_spawn, direction, new_direction, score
+    global snake_pos, snake_body, food_pos, food_spawn, direction, score, fps_controller, new_direction
     
+    fps_controller = init_fps_controller()
+
     snake_pos = [100, 50]
-    snake_body = [[100, 50], [100-10, 50], [100-(2*10), 50]]
+    snake_body = [[100, 50], [100-GRID_SIZE, 50], [100-(2*GRID_SIZE), 50]]
 
-    food_pos = [random.randrange(1, (init_framesize()[0]//10)) * 10, random.randrange(1, (init_framesize()[1]//10)) * 10]
+    food_pos = [random.randrange(1, (init_framesize()[0]//GRID_SIZE)) * GRID_SIZE, random.randrange(1, (init_framesize()[1]//GRID_SIZE)) * GRID_SIZE]
     food_spawn = True
-
     direction = 'RIGHT'
     new_direction = direction
 
     score = 0
 
+
+def control_difficulty(difficulty):
+    """
+    Changing the time between frames. This controls the difficulty.
+    """
+    global fps_controller
+    fps_controller.tick(difficulty)
+    
 # Game Over
 def game_over(frame_size_x, frame_size_y, black, red):
+    save_score()
+
     my_font = pygame.font.SysFont('times new roman', 90)
     game_over_surface = my_font.render('YOU DIED', True, red)
     game_over_rect = game_over_surface.get_rect()
@@ -70,17 +85,46 @@ def game_over(frame_size_x, frame_size_y, black, red):
     #sys.exit()
 
 
-# Score
 def show_score(frame_size_x, frame_size_y, choice, color, font, size):
+    """
+    Show score or highscore.\n
+    Choice = 1: Show score.\n
+    Choice = 0: Show highscores.
+    """
     score_font = pygame.font.SysFont(font, size)
-    score_surface = score_font.render('Score : ' + str(score), True, color)
-    score_rect = score_surface.get_rect()
+    
     if choice == 1:
-        score_rect.midtop = (frame_size_x/10, 15)
-    else:
-        score_rect.midtop = (frame_size_x/2, frame_size_y/1.25)
-    game_window.blit(score_surface, score_rect)
-    # pygame.display.flip()
+        score_surface = score_font.render("Score: "  + str(score), True, color)
+        score_rect = score_surface.get_rect()
+        score_rect.midtop = (frame_size_x/10, 16)
+        game_window.blit(score_surface, score_rect)
+
+    elif choice == 0:
+        render_list = []
+        highscores = get_highscores()
+
+        # Add highscore title to the highscore screen
+        render_list.append("Highscores:")
+
+        # Create each row of highscore
+        for i in range(len(highscores)):
+            render_list.append(str(i + 1) + ". " + str(highscores[i]))
+
+        # Render the highscores in a list
+        for i in range(len(render_list)):
+            score_surface = score_font.render(render_list[i], True, color)
+            score_rect = score_surface.get_rect()
+            score_rect.midtop = (frame_size_x/2, frame_size_y/1.5 + 16 * i)
+            game_window.blit(score_surface, score_rect)
+
+
+def advance_difficulty(difficulty):
+    """
+    Increase the speed of the snake.
+    """
+    difficulty += DYNAMIC_DIFFICULTY_INCREASE
+    return difficulty
+    
 
 def menu(frame_size_x, frame_size_y, white, black):
     """
@@ -133,31 +177,43 @@ def menu(frame_size_x, frame_size_y, white, black):
 
 def if_quit_then_exit(event):
     """
-    Quit the game if a quit event is given
+    Quit the game if a quit event is given.
     """
     if event.type == pygame.QUIT:
         pygame.quit()
         sys.exit()
 
 
-def movement_controls(event):
+def save_score():
     """
-    Set the 'W', 'A', 'S', 'D' keys as Up, Left, Down, Right respectively. This includes a check for legal direction.
+    Save the 5 best scores in a pickle file.
     """
-    new_direction = ""
-    global direction
+    #TODO: Add player names
+    try:
+        with open("highscores.pickle", "rb") as score_file:
+            highscores = pickle.load(score_file)
+    except:
+        highscores = []
 
-    if event.key == pygame.K_UP or event.key == ord('w'):
-        new_direction = 'UP'
-    if event.key == pygame.K_DOWN or event.key == ord('s'):
-        new_direction = 'DOWN'
-    if event.key == pygame.K_LEFT or event.key == ord('a'):
-        new_direction = 'LEFT'
-    if event.key == pygame.K_RIGHT or event.key == ord('d'):
-        new_direction = 'RIGHT'
-    
-    if legal_direction(new_direction):
-        direction = new_direction
+    highscores.append(score)
+    highscores.sort(reverse=True)
+
+    with open("highscores.pickle", "wb") as score_file:    
+        pickle.dump(highscores[:5], score_file)
+
+
+def get_highscores():
+    """
+    Get the top 5 highscores from a pickle file.
+    """
+    try:
+        with open("highscores.pickle", "rb") as score_file:
+            highscores = pickle.load(score_file)
+    except:
+        highscores = []
+
+    return highscores
+
 
 def quit_key(event):
     """
@@ -173,54 +229,76 @@ def controls(event):
     Exit (ESC).
     """
     # Whenever a key is pressed down
-    if event.type == pygame.KEYDOWN:
+    if event.type != pygame.QUIT and event.type == pygame.KEYDOWN:
         movement_controls(event)
         quit_key(event)
 
 
-def legal_direction(new_direction):
+def movement_controls(event):
+    """
+    Set the 'W', 'A', 'S', 'D' keys as Up, Left, Down, Right respectively. This includes a check for legal direction.
+    """
+    global new_direction
+
+    if event.key == pygame.K_UP or event.key == ord('w'):
+        new_direction = 'UP'
+    if event.key == pygame.K_DOWN or event.key == ord('s'):
+        new_direction = 'DOWN'
+    if event.key == pygame.K_LEFT or event.key == ord('a'):
+        new_direction = 'LEFT'
+    if event.key == pygame.K_RIGHT or event.key == ord('d'):
+        new_direction = 'RIGHT'
+
+
+def update_direction_if_legal():
     """
     Check if the direction is allowed, i.e. that the snake does not move in the opposite direction instantaneously.
     """
+    global new_direction, direction
     if new_direction == 'UP' and direction != 'DOWN':
-        return True
-    if new_direction == 'DOWN' and direction != 'UP':
-        return True
-    if new_direction == 'LEFT' and direction != 'RIGHT':
-        return True
-    if new_direction == 'RIGHT' and direction != 'LEFT':
-        return True
-    
-    return False
+        direction = new_direction
+    elif new_direction == 'DOWN' and direction != 'UP':
+        direction = new_direction
+    elif new_direction == 'LEFT' and direction != 'RIGHT':
+        direction = new_direction
+    elif new_direction == 'RIGHT' and direction != 'LEFT':
+        direction = new_direction
 
 
 def update_snake_position():
     """
     Move the snake depending on current direction.
     """
-    #TODO: Set position change as a constant instead of a magical number
     if direction == 'UP':
-        snake_pos[1] -= 10
+        snake_pos[1] -= GRID_SIZE
     if direction == 'DOWN':
-        snake_pos[1] += 10
+        snake_pos[1] += GRID_SIZE
     if direction == 'LEFT':
-        snake_pos[0] -= 10
+        snake_pos[0] -= GRID_SIZE
     if direction == 'RIGHT':
-        snake_pos[0] += 10
+        snake_pos[0] += GRID_SIZE
 
 
-def grow_snake():
+def move_or_grow_snake(difficulty):
     """
-    Increase snake size if food is eaten by snake
+    Increase snake size if food is eaten by snake otherwise move the snake.
     """
-    global score
-    global food_spawn
+    global score, food_spawn
+    new_difficulty = difficulty
+
     snake_body.insert(0, list(snake_pos))
     if snake_pos[0] == food_pos[0] and snake_pos[1] == food_pos[1]:
         score += 1
+        new_difficulty = advance_difficulty(difficulty)
         food_spawn = False
+        return new_difficulty
+    
     else:
         snake_body.pop()
+
+    return 0
+
+    
 
 
 def spawn_food(frame_size_x, frame_size_y):
@@ -230,7 +308,7 @@ def spawn_food(frame_size_x, frame_size_y):
     global food_spawn
     global food_pos
     if not food_spawn:
-        food_pos = [random.randrange(1, (frame_size_x//10)) * 10, random.randrange(1, (frame_size_y//10)) * 10]
+        food_pos = [random.randrange(1, (frame_size_x//GRID_SIZE)) * GRID_SIZE, random.randrange(1, (frame_size_y//GRID_SIZE)) * GRID_SIZE]
     food_spawn = True
 
 
@@ -238,11 +316,10 @@ def draw_snake(green):
     """
     Draw the snake in the game window. One square at a time.
     """
-    # TODO: Reoccuring magic number 10
     for pos in snake_body:
         # .draw.rect(play_surface, color, xy-coordinate)
         # xy-coordinate -> .Rect(x, y, size_x, size_y)
-        pygame.draw.rect(game_window, green, pygame.Rect(pos[0], pos[1], 10, 10))
+        pygame.draw.rect(game_window, green, pygame.Rect(pos[0], pos[1], GRID_SIZE, GRID_SIZE))
 
 
 def fill_background(black):
@@ -256,7 +333,7 @@ def draw_food(white):
     """
     Draw the existing food in the game window.
     """
-    pygame.draw.rect(game_window, white, pygame.Rect(food_pos[0], food_pos[1], 10, 10))
+    pygame.draw.rect(game_window, white, pygame.Rect(food_pos[0], food_pos[1], GRID_SIZE, GRID_SIZE))
 
 
 def snake_out_of_bounds(frame_size_x, frame_size_y, black, red):
@@ -264,9 +341,9 @@ def snake_out_of_bounds(frame_size_x, frame_size_y, black, red):
     Show game over screen if the snake is outside the game window.
     """
     # Getting out of bounds
-    if snake_pos[0] < 0 or snake_pos[0] > frame_size_x-10:
+    if snake_pos[0] < 0 or snake_pos[0] > frame_size_x - GRID_SIZE:
         return game_over(frame_size_x, frame_size_y, black, red)
-    if snake_pos[1] < 0 or snake_pos[1] > frame_size_y-10:
+    if snake_pos[1] < 0 or snake_pos[1] > frame_size_y - GRID_SIZE:
         return game_over(frame_size_x, frame_size_y, black, red)
     return True
 

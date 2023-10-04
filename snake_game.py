@@ -18,22 +18,28 @@ else:
 
 black, white, red, green, blue = init_colors()
 frame_size_x, frame_size_y = init_framesize()
-fps_controller = init_fps_controller()
+current_difficulty = 0
 
-def main_game():
-    initials()
+def main_game(difficulty):
+    init_globals()
+    global current_difficulty
+    current_difficulty = difficulty
     while True:
         for event in pygame.event.get():
             if_quit_then_exit(event)
-            controls(event)    
 
-        # Setup all controls for the game
+            # Setup all controls for the game
+            controls(event)  
+
+        update_direction_if_legal()
 
         # Move the snake in the game window
         update_snake_position()
+        tmp = move_or_grow_snake(difficulty)
+        if tmp != 0:
+            current_difficulty = tmp
 
-        # Food mechanic
-        grow_snake()    
+        # Food mechanic  
         spawn_food(frame_size_x, frame_size_y)
 
         # Drawing in the game window
@@ -52,8 +58,8 @@ def main_game():
         pygame.display.update()
 
         # Refresh rate
-        fps_controller.tick(difficulty)
+        control_difficulty(current_difficulty)
 
 while True:
     difficulty = menu(frame_size_x, frame_size_y, white, black)
-    main_game()
+    main_game(difficulty)
