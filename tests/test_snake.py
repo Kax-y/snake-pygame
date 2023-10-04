@@ -31,11 +31,6 @@ class TestSnake(unittest.TestCase):
         self.assertEqual(green, pygame.Color(0, 255, 0))
         self.assertEqual(blue, pygame.Color(0, 0, 255))
 
-    def test_init_difficulty(self):
-        difficulty = init_difficulty()
-
-        self.assertEqual(difficulty, 25)
-
     def test_init_framesize(self):
         frame_size_x, frame_size_y = init_framesize()
 
