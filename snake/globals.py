@@ -45,7 +45,7 @@ def init_globals():
     Initialize Snake values
     """
 
-    global snake_pos, snake_body, food_pos, food_spawn, direction, score, fps_controller
+    global snake_pos, snake_body, food_pos, food_spawn, direction, score, fps_controller, new_direction
     
     fps_controller = init_fps_controller()
 
@@ -55,6 +55,7 @@ def init_globals():
     food_pos = [random.randrange(1, (init_framesize()[0]//GRID_SIZE)) * GRID_SIZE, random.randrange(1, (init_framesize()[1]//GRID_SIZE)) * GRID_SIZE]
     food_spawn = True
     direction = 'RIGHT'
+    new_direction = direction
 
     score = 0
 
@@ -64,7 +65,6 @@ def control_difficulty(difficulty):
     Changing the time between frames. This controls the difficulty.
     """
     global fps_controller
-    print(difficulty)
     fps_controller.tick(difficulty)
     
 # Game Over
@@ -238,8 +238,7 @@ def movement_controls(event):
     """
     Set the 'W', 'A', 'S', 'D' keys as Up, Left, Down, Right respectively. This includes a check for legal direction.
     """
-    global direction
-    new_direction = ""
+    global new_direction
 
     if event.key == pygame.K_UP or event.key == ord('w'):
         new_direction = 'UP'
@@ -249,25 +248,21 @@ def movement_controls(event):
         new_direction = 'LEFT'
     if event.key == pygame.K_RIGHT or event.key == ord('d'):
         new_direction = 'RIGHT'
-    
-    if legal_direction(new_direction):
-        direction = new_direction
 
 
-def legal_direction(new_direction):
+def update_direction_if_legal():
     """
     Check if the direction is allowed, i.e. that the snake does not move in the opposite direction instantaneously.
     """
+    global new_direction, direction
     if new_direction == 'UP' and direction != 'DOWN':
-        return True
-    if new_direction == 'DOWN' and direction != 'UP':
-        return True
-    if new_direction == 'LEFT' and direction != 'RIGHT':
-        return True
-    if new_direction == 'RIGHT' and direction != 'LEFT':
-        return True
-    
-    return False
+        direction = new_direction
+    elif new_direction == 'DOWN' and direction != 'UP':
+        direction = new_direction
+    elif new_direction == 'LEFT' and direction != 'RIGHT':
+        direction = new_direction
+    elif new_direction == 'RIGHT' and direction != 'LEFT':
+        direction = new_direction
 
 
 def update_snake_position():
@@ -357,9 +352,7 @@ def snake_collision_with_itself(frame_size_x, frame_size_y, black, red):
     """
     Show game over screen if snake walks into its tail.
     """
-    print(snake_pos, snake_body[1:])
     for block in snake_body[1:]:
         if snake_pos[0] == block[0] and snake_pos[1] == block[1]:
-            print("collision with itself")
             return game_over(frame_size_x, frame_size_y, black, red)
     return True

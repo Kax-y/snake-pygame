@@ -31,6 +31,8 @@ def main_game(difficulty):
             # Setup all controls for the game
             controls(event)  
 
+        update_direction_if_legal()
+
         # Move the snake in the game window
         update_snake_position()
         tmp = move_or_grow_snake(difficulty)
