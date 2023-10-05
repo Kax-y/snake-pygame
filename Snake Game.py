@@ -57,6 +57,10 @@ new_direction = direction
 
 score = 0
 food_spawn_counter = 0
+obs_spawn_counter = 0
+
+obstacle_spawn = False
+obstacle_pos = []
 
 
 # Game Over
@@ -182,12 +186,18 @@ def grow_snake():
     global score
     global food_spawn
     global food_spawn_counter
+    global obs_spawn_counter
+    global obstacle_spawn
+    global obstacle_pos
     snake_body.insert(0, list(snake_pos))
     if snake_pos[0] == food_pos[0] and snake_pos[1] == food_pos[1]:
         if food_spawn_counter == 10:
             score +=3   
             food_spawn = False
             food_spawn_counter = 0
+            obs_spawn_counter = 0
+            obstacle_spawn = False
+            obstacle_pos.clear()
         score += 1
         food_spawn = False
     else:
@@ -201,13 +211,52 @@ def spawn_food():
     global food_pos
     global food_spawn_counter
     global score
+    global obs_spawn_counter
 
-    print("food_spawn_counter:", food_spawn_counter)
+    #print("food_spawn_counter:", food_spawn_counter)
+    #print("obs_spawn_counter:", obs_spawn_counter)
     if not food_spawn:
         food_pos = [random.randrange(1, (frame_size_x//10)) * 10, random.randrange(1, (frame_size_y//10)) * 10]
         food_spawn = True
         food_spawn_counter += 1
+        obs_spawn_counter += 1
+
+def spawn_obstacle():
+    """
+    Spawn an obstacle if there is no obstacle on the screen.
+    """
+    global obstacle_spawn
+    global obstacle_pos
+    global obs_spawn_counter
+
+    if obs_spawn_counter == 10 and not obstacle_spawn:
+        # Generate the position for the top-left corner of the entire shape
+        x = random.randrange(1, (frame_size_x//10 - 9)) * 10
+        y = random.randrange(1, (frame_size_y//10)) * 10
+
+        # Create a list of eight rectangles that are put in a line
+        obstacle_pos = [
+            [x, y],
+            [x + 10, y],
+            [x + 20, y],
+            [x + 30, y],
+            [x + 40, y],
+            [x + 50, y],
+            [x + 60, y],
+            [x + 70, y]
+        ]
+        obstacle_spawn = True
     
+def draw_obstacle():
+    """
+    Draw the existing obstacle in the game window.
+    """
+    global obstacle_pos
+    global food_spawn_counter
+    if obs_spawn_counter == 10:
+        for pos in obstacle_pos:
+            pygame.draw.rect(game_window, red, pygame.Rect(pos[0], pos[1], 10, 10))
+
 
 def draw_snake():
     """
@@ -247,6 +296,9 @@ def snake_out_of_bounds():
         game_over()
     if snake_pos[1] < 0 or snake_pos[1] > frame_size_y-10:
         game_over()
+    for obstacle_rect in obstacle_pos:
+        if snake_pos[0] == obstacle_rect[0] and snake_pos[1] == obstacle_rect[1]:
+            game_over()
 
 
 def snake_collision_with_itself():
@@ -272,11 +324,12 @@ while True:
     # Food mechanic
     grow_snake()    
     spawn_food()
-
+    spawn_obstacle()
     # Drawing in the game window
     fill_background()
     draw_snake()
     draw_food()
+    draw_obstacle()
     show_score(1, white, 'consolas', 20)
 
     # Game over conditions
