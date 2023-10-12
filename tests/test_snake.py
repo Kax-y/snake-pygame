@@ -39,6 +39,9 @@ class TestSnake(unittest.TestCase):
         self.assertEqual(yellow, pygame.Color(255, 255, 0))
 
     def test_init_framesize(self):
+        """
+        Check if framesize is initialised to the correct framesize.
+        """
         frame_size_x, frame_size_y = snake.init_framesize()
 
         self.assertEqual(frame_size_x, 720)
