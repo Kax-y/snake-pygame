@@ -18,12 +18,12 @@ else:
 
 black, white, red, green, blue, yellow = init_colors()
 frame_size_x, frame_size_y = init_framesize()
-current_difficulty = 0
 
 def main_game(difficulty):
-    init_globals()
-    global current_difficulty
-    current_difficulty = difficulty
+    """
+    The game loop.
+    """
+    init_globals(difficulty)
     while True:
         for event in pygame.event.get():
             if_quit_then_exit(event)
@@ -35,9 +35,7 @@ def main_game(difficulty):
 
         # Move the snake in the game window
         update_snake_position()
-        tmp = move_or_grow_snake(difficulty)
-        if tmp != 0:
-            current_difficulty = tmp
+        move_or_grow_snake()
 
         # Food mechanic  
         spawn_food(frame_size_x, frame_size_y)
@@ -59,9 +57,10 @@ def main_game(difficulty):
         # Refresh game screen
         pygame.display.update()
 
-        # Refresh rate
-        control_difficulty(current_difficulty)
+        # Change the refresh rate depending on current difficulty
+        control_difficulty()
 
+# Menu loop for the game loop to return to when the game ends
 while True:
     difficulty = menu(frame_size_x, frame_size_y, white, black)
     main_game(difficulty)
