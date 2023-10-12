@@ -312,8 +312,6 @@ def move_or_grow_snake(difficulty):
 
     return 0
 
-    
-
 
 def spawn_food(frame_size_x, frame_size_y):
     """
