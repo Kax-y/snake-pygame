@@ -130,7 +130,8 @@ class TestSnake(unittest.TestCase):
 
     def test_legal_direction_down(self):
         """
-        Test one illegal and one legal new direction with down as starting direction
+        Test one illegal and one legal new direction with down 
+        as starting direction
         """
         snake.direction = snake.DOWN
         snake.new_direction = snake.UP
@@ -144,7 +145,8 @@ class TestSnake(unittest.TestCase):
 
     def test_legal_direction_up(self):
         """
-        Test one illegal and one legal new direction with up as starting direction
+        Test one illegal and one legal new direction with up
+        as starting direction
         """
         snake.direction = snake.UP
         snake.new_direction = snake.DOWN
@@ -158,7 +160,8 @@ class TestSnake(unittest.TestCase):
 
     def test_legal_direction_right(self):
         """
-        Test one illegal and one legal new direction with right as starting direction
+        Test one illegal and one legal new direction with right
+        as starting direction
         """
         snake.direction = snake.RIGHT
         snake.new_direction = snake.LEFT
@@ -172,7 +175,8 @@ class TestSnake(unittest.TestCase):
 
     def test_legal_direction_left(self):
         """
-        Test one illegal and one legal new direction with left as starting direction
+        Test one illegal and one legal new direction with left
+        as starting direction
         """
         snake.direction = snake.LEFT
         snake.new_direction = snake.RIGHT
