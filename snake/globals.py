@@ -62,8 +62,9 @@ def init_globals(chosen_difficulty):
     snake_pos = [100, 50]
     snake_body = [[100, 50], [100-GRID_SIZE, 50], [100-(2*GRID_SIZE), 50]]
 
-    food_pos = [random.randrange(1, (init_framesize()[0]//GRID_SIZE)) * GRID_SIZE,
-                random.randrange(1, (init_framesize()[1]//GRID_SIZE)) * GRID_SIZE]
+    frame_size = init_framesize()
+    food_pos = [random.randrange(1, (frame_size[0]//GRID_SIZE)) * GRID_SIZE,
+                random.randrange(1, (frame_size[1]//GRID_SIZE)) * GRID_SIZE]
     food_spawn = True
     direction = RIGHT
     new_direction = direction

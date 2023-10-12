@@ -1,40 +1,29 @@
 import unittest
 import snake.globals as snake
 import pygame
+import random
 
 
 class TestSnake(unittest.TestCase):
-
+    """
+    Test relevant snake functionality.
+    """
     def __init__(self, *args, **kwargs):
+        """
+        Initialise necessary values for testing.
+        """
         super(TestSnake, self).__init__(*args, **kwargs)
-        snake.init_globals()
-        self.starting_food_pos = snake.food_pos
-        self.starting_food_spawn = snake.food_spawn
-        self.starting_food_spawn_counter = snake.food_spawn_counter
-        self.starting_obstacle_position = snake.obstacle_pos
-        self.starting_obstacle_spawn_counter = snake.obs_spawn_counter
-        self.starting_should_obstacle_spawn = snake.obstacle_spawn
-        self.starting_direction = snake.direction
-        self.starting_new_direction = snake.new_direction
-        self.starting_snake_position = snake.snake_pos
-        self.starting_snake_body = snake.snake_body
-        self.starting_score = snake.score
+        self.difficulty = 10
+        self.seed = 42
+        random.seed(self.seed)
+        snake.init_globals(self.difficulty)
 
     def setUp(self):
         """
         Reset global values
         """
-        snake.food_pos = self.starting_food_pos
-        snake.food_spawn = self.starting_food_spawn
-        snake.food_spawn_counter = self.starting_food_spawn_counter
-        snake.obstacle_pos = self.starting_obstacle_position
-        snake.obs_spawn_counter = self.starting_obstacle_spawn_counter
-        snake.obstacle_spawn = self.starting_should_obstacle_spawn
-        snake.direction = self.starting_direction
-        snake.new_direction = self.starting_new_direction
-        snake.snake_pos = self.starting_snake_position
-        snake.snake_body = self.starting_snake_body
-        snake.score = self.starting_score
+        random.seed(self.seed)
+        snake.init_globals(self.difficulty)
 
     def test_init_colors(self):
         """
@@ -65,18 +54,58 @@ class TestSnake(unittest.TestCase):
 
     def test_init_globals(self):
         """
+        Test that the global values are initialised correctly.
         """
-        pass
+        FRAME_SIZE = snake.init_framesize()
+        random.seed(self.seed)
+
+        CORRECT_SNAKE_POSITION = [100, 50]
+        CORRECT_SNAKE_BODY = [[100, 50], [
+            100 - snake.GRID_SIZE, 50], [100 - (2 * snake.GRID_SIZE), 50]]
+        CORRECT_FOOD_POSITION = [random.randrange(1, (FRAME_SIZE[0]//snake.GRID_SIZE)) * snake.GRID_SIZE,
+                                 random.randrange(1, (FRAME_SIZE[1]//snake.GRID_SIZE)) * snake.GRID_SIZE]
+
+        self.assertEqual(snake.snake_pos, CORRECT_SNAKE_POSITION)
+        self.assertEqual(snake.snake_body, CORRECT_SNAKE_BODY)
+        self.assertEqual(snake.food_pos, CORRECT_FOOD_POSITION)
+
+        self.assertEqual(snake.food_spawn, True)
+        self.assertEqual(snake.direction, snake.RIGHT)
+        self.assertEqual(snake.score, 0)
+        self.assertEqual(snake.new_direction, snake.RIGHT)
+        self.assertEqual(snake.food_spawn_counter, 0)
+        self.assertEqual(snake.obstacle_pos, [])
+        self.assertEqual(snake.obs_spawn_counter, 0)
+        self.assertEqual(snake.obstacle_spawn, 0)
+        self.assertEqual(snake.difficulty, self.difficulty)
 
     def test_update_snake_position(self):
         """
+        Test updating snake position.
         """
-        pass
+        # Move up
+        snake.direction = snake.UP
+        previous_pos = snake.snake_pos[1]
+        snake.update_snake_position()
+        self.assertTrue(snake.snake_pos[1], previous_pos - snake.GRID_SIZE)
 
-    def test_snake_out_of_bounds(self):
-        """
-        """
-        pass
+        # Move down
+        snake.direction = snake.DOWN
+        previous_pos = snake.snake_pos[1]
+        snake.update_snake_position()
+        self.assertTrue(snake.snake_pos[1], previous_pos + snake.GRID_SIZE)
+
+        # Move left
+        snake.direction = snake.LEFT
+        previous_pos = snake.snake_pos[0]
+        snake.update_snake_position()
+        self.assertTrue(snake.snake_pos[1], previous_pos - snake.GRID_SIZE)
+
+        # Move right
+        snake.direction = snake.RIGHT
+        previous_pos = snake.snake_pos[0]
+        snake.update_snake_position()
+        self.assertTrue(snake.snake_pos[1], previous_pos + snake.GRID_SIZE)
 
     def test_save_get_score(self):
         """
