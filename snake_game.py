@@ -16,7 +16,7 @@ if check_errors[1] > 0:
 else:
     print('[+] Game successfully initialised')
 
-black, white, red, green, blue, yellow = init_colors()
+black, white, red, green, yellow = init_colors()
 frame_size_x, frame_size_y = init_framesize()
 
 def main_game(difficulty):

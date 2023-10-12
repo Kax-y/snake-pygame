@@ -29,13 +29,12 @@ class TestSnake(unittest.TestCase):
         """
         Check that all colours are initialised properly.
         """
-        black, white, red, green, blue, yellow = snake.init_colors()
+        black, white, red, green, yellow = snake.init_colors()
 
         self.assertEqual(black, pygame.Color(0, 0, 0))
         self.assertEqual(white, pygame.Color(255, 255, 255))
         self.assertEqual(red, pygame.Color(255, 0, 0))
         self.assertEqual(green, pygame.Color(0, 255, 0))
-        self.assertEqual(blue, pygame.Color(0, 0, 255))
         self.assertEqual(yellow, pygame.Color(255, 255, 0))
 
     def test_init_framesize(self):
