@@ -16,7 +16,7 @@ if check_errors[1] > 0:
 else:
     print('[+] Game successfully initialised')
 
-black, white, red, green, blue = init_colors()
+black, white, red, green, blue, yellow = init_colors()
 frame_size_x, frame_size_y = init_framesize()
 current_difficulty = 0
 
@@ -41,11 +41,13 @@ def main_game(difficulty):
 
         # Food mechanic  
         spawn_food(frame_size_x, frame_size_y)
+        spawn_obstacle(frame_size_x,frame_size_y)
 
         # Drawing in the game window
         fill_background(black)
         draw_snake(green)
-        draw_food(white)
+        draw_food(white, yellow)
+        draw_obstacle(red)
         show_score(frame_size_x, frame_size_y, 1, white, 'consolas', 20)
 
         # Game over conditions

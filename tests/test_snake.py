@@ -16,12 +16,12 @@ class TestSnake(unittest.TestCase):
         global new_direction
         global snake_pos
         global snake_body
-        
+
         direction = self.starting_direction
         new_direction = self.starting_new_direction
         snake_pos = self.starting_snake_position
         snake_body = self.starting_snake_body
-    
+
     def test_init_colors(self):
         black, white, red, green, blue = init_colors()
 
@@ -42,7 +42,7 @@ class TestSnake(unittest.TestCase):
 
         self.assertIsInstance(fps_controller, pygame.time.Clock)
 
-    #TODO: Consider making these functions take parameters instead of globals for more modularised testing (setting globals works but ugly)
+    # TODO: Consider making these functions take parameters instead of globals for more modularised testing (setting globals works but ugly)
     # Testing the function update_snake_position()
     def test_move_right(self):
         pass
@@ -69,7 +69,6 @@ class TestSnake(unittest.TestCase):
     def test_legal_direction_up_then_down(self):
         pass
 
-
     def test_legal_direction_down_then_right(self):
         pass
 
@@ -81,7 +80,6 @@ class TestSnake(unittest.TestCase):
 
     def test_legal_direction_down_then_down(self):
         pass
-
 
     def test_legal_direction_right_then_right(self):
         pass
@@ -95,7 +93,6 @@ class TestSnake(unittest.TestCase):
     def test_legal_direction_right_then_down(self):
         pass
 
-
     def test_legal_direction_left_then_right(self):
         pass
 
@@ -106,8 +103,8 @@ class TestSnake(unittest.TestCase):
         pass
 
     def test_legal_direction_left_then_down(self):
-        pass    
-    
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()

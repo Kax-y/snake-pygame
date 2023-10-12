@@ -10,8 +10,9 @@ def init_colors():
     red = pygame.Color(255, 0, 0)
     green = pygame.Color(0, 255, 0)
     blue = pygame.Color(0, 0, 255)
+    yellow = pygame.Color(255,255,0)
 
-    return black, white, red, green, blue
+    return black, white, red, green, blue, yellow
 
 
 def init_framesize():
@@ -45,7 +46,7 @@ def init_globals():
     Initialize Snake values
     """
 
-    global snake_pos, snake_body, food_pos, food_spawn, direction, score, fps_controller, new_direction
+    global snake_pos, snake_body, food_pos, food_spawn, direction, score, fps_controller, new_direction, food_spawn_counter, obstacle_pos, obs_spawn_counter, obstacle_spawn
     
     fps_controller = init_fps_controller()
 
@@ -56,6 +57,10 @@ def init_globals():
     food_spawn = True
     direction = 'RIGHT'
     new_direction = direction
+    food_spawn_counter = 0
+    obs_spawn_counter = 0
+    obstacle_spawn = False
+    obstacle_pos = []
 
     score = 0
 
@@ -283,11 +288,20 @@ def move_or_grow_snake(difficulty):
     """
     Increase snake size if food is eaten by snake otherwise move the snake.
     """
-    global score, food_spawn
+    global score, food_spawn, food_spawn_counter, obs_spawn_counter, obstacle_spawn, obstacle_pos
     new_difficulty = difficulty
 
     snake_body.insert(0, list(snake_pos))
     if snake_pos[0] == food_pos[0] and snake_pos[1] == food_pos[1]:
+        if food_spawn_counter == 10:
+            score +=3
+            food_spawn = False
+            food_spawn_counter = 0
+            obs_spawn_counter = 0
+            obstacle_spawn = False
+            obstacle_pos.clear()
+            new_difficulty = advance_difficulty(difficulty)
+            return new_difficulty
         score += 1
         new_difficulty = advance_difficulty(difficulty)
         food_spawn = False
@@ -298,8 +312,6 @@ def move_or_grow_snake(difficulty):
 
     return 0
 
-    
-
 
 def spawn_food(frame_size_x, frame_size_y):
     """
@@ -307,9 +319,39 @@ def spawn_food(frame_size_x, frame_size_y):
     """
     global food_spawn
     global food_pos
+    global food_spawn_counter
+    global obs_spawn_counter
     if not food_spawn:
         food_pos = [random.randrange(1, (frame_size_x//GRID_SIZE)) * GRID_SIZE, random.randrange(1, (frame_size_y//GRID_SIZE)) * GRID_SIZE]
+        food_spawn_counter += 1
+        obs_spawn_counter += 1
     food_spawn = True
+
+def spawn_obstacle(frame_size_x,frame_size_y):
+    """
+    Spawn an obstacle if there is no obstacle on the screen.
+    """
+    global obstacle_spawn
+    global obstacle_pos
+    global obs_spawn_counter
+
+    if obs_spawn_counter == 10 and not obstacle_spawn:
+        # Generate the position for the top-left corner of the entire shape
+        x = random.randrange(1, (frame_size_x//10 - 9)) * 10
+        y = random.randrange(1, (frame_size_y//10)) * 10
+
+        # Create a list of eight rectangles that are put in a line
+        obstacle_pos = [
+            [x, y],
+            [x + 10, y],
+            [x + 20, y],
+            [x + 30, y],
+            [x + 40, y],
+            [x + 50, y],
+            [x + 60, y],
+            [x + 70, y]
+        ]
+        obstacle_spawn = True
 
 
 def draw_snake(green):
@@ -329,12 +371,25 @@ def fill_background(black):
     game_window.fill(black)
     
 
-def draw_food(white):
+def draw_food(white, yellow):
     """
     Draw the existing food in the game window.
     """
-    pygame.draw.rect(game_window, white, pygame.Rect(food_pos[0], food_pos[1], GRID_SIZE, GRID_SIZE))
+    global food_spawn_counter
+    if food_spawn_counter == 10:
+        pygame.draw.rect(game_window, yellow, pygame.Rect(food_pos[0], food_pos[1], 10, 10))
+    else:
+        pygame.draw.rect(game_window, white, pygame.Rect(food_pos[0], food_pos[1], 10, 10))
 
+def draw_obstacle(red):
+    """
+    Draw the existing obstacle in the game window.
+    """
+    global obstacle_pos
+    global food_spawn_counter
+    if obs_spawn_counter == 10:
+        for pos in obstacle_pos:
+            pygame.draw.rect(game_window, red, pygame.Rect(pos[0], pos[1], 10, 10))
 
 def snake_out_of_bounds(frame_size_x, frame_size_y, black, red):
     """
@@ -345,6 +400,9 @@ def snake_out_of_bounds(frame_size_x, frame_size_y, black, red):
         return game_over(frame_size_x, frame_size_y, black, red)
     if snake_pos[1] < 0 or snake_pos[1] > frame_size_y - GRID_SIZE:
         return game_over(frame_size_x, frame_size_y, black, red)
+    for obstacle_rect in obstacle_pos:
+        if snake_pos[0] == obstacle_rect[0] and snake_pos[1] == obstacle_rect[1]:
+            return game_over(frame_size_x, frame_size_y, black, red)
     return True
 
 
