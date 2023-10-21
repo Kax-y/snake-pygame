@@ -344,7 +344,7 @@ def spawn_food(frame_size_x, frame_size_y):
                     random.randrange(1, (frame_size_y//GRID_SIZE)) * GRID_SIZE]
         food_spawn_counter += 1
         obs_spawn_counter += 1
-    food_spawn = True
+        food_spawn = True
 
 
 def spawn_obstacle(frame_size_x, frame_size_y):
